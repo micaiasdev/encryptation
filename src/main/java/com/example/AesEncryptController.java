@@ -177,34 +177,6 @@ public class AesEncryptController {
   }
 
   @FXML
-  void handleSelectFile(ActionEvent event) {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Selecione o Arquivo para Fazer a Encriptação");
-
-    Window stage = selectFileButton.getScene().getWindow();
-    File selectedFile = fileChooser.showOpenDialog(stage);
-    try {
-      filePathField.setText(selectedFile.getAbsolutePath());
-      filePathSelected = Paths.get(selectedFile.getAbsolutePath());
-    } catch (Exception e) {
-      System.out.println(e);
-    }
-  }
-
-  @FXML
-  void selectSavePathCryptoFile() throws IOException {
-    FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Selecione a pasta para salvar o arquivo");
-    fileChooser.setInitialFileName("Arquivo Cryptografado.txt");
-
-    Window stage = encryptButton.getScene().getWindow();
-    File saveFile = fileChooser.showSaveDialog(stage);
-
-    if (saveFile != null)
-      filePathSave = Paths.get(saveFile.getAbsolutePath());
-  }
-
-  @FXML
   Boolean isHex(String s) {
     if (s == null)
       return false;
@@ -265,6 +237,58 @@ public class AesEncryptController {
       else
         return true;
     }
+  }
+
+  @FXML
+  void alertGenerate(String title, String content) {
+    Alert alert = new Alert(AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setContentText(content);
+  }
+
+  void validAllInputs() throws IOException {
+    if (!validFileFormat()) {
+      alertGenerate("Formato de entrada inválido",
+          "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
+    }
+    if (!validIvField()) {
+      alertGenerate("IV inválido",
+          "O vetor de inicialização (IV) tem tamanho inválido. Para AES utilize 16 bytes (128 bits). Verifique o valor fornecido.");
+    }
+    if (!validKeyField()) {
+      alertGenerate("Tamanho de chave inválido",
+          "O tamanho da chave é inválido. O AES aceita 128, 192 ou 256 bits (16, 24 ou 32 bytes). Verifique o tamanho informado."
+
+      );
+    }
+  }
+
+  @FXML
+  void handleSelectFile(ActionEvent event) {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Selecione o Arquivo para Fazer a Encriptação");
+
+    Window stage = selectFileButton.getScene().getWindow();
+    File selectedFile = fileChooser.showOpenDialog(stage);
+    try {
+      filePathField.setText(selectedFile.getAbsolutePath());
+      filePathSelected = Paths.get(selectedFile.getAbsolutePath());
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  @FXML
+  void selectSavePathCryptoFile() throws IOException {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Selecione a pasta para salvar o arquivo");
+    fileChooser.setInitialFileName("Arquivo Cryptografado.txt");
+
+    Window stage = encryptButton.getScene().getWindow();
+    File saveFile = fileChooser.showSaveDialog(stage);
+
+    if (saveFile != null)
+      filePathSave = Paths.get(saveFile.getAbsolutePath());
   }
 
   @FXML
