@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="TOP_CENTER" prefHeight="400.0" prefWidth="600.0" spacing="15.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.FileSigningController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Text style="-fx-font-weight: bold; -fx-font-size: 16;" text="Assinatura Digital de Arquivo" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#backPage" text="&lt;" />
+        </HBox>
+        <Separator />
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label minWidth="150" text="Chave Privada (.pem):" />
+            <TextField fx:id="privateKeyPathField" editable="false" promptText="Caminho do arquivo de chave privada" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectPrivateKeyButton" onAction="#handleSelectPrivateKeyFile" text="Selecionar Chave" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label minWidth="150" text="Arquivo a ser Assinado:" />
+            <TextField fx:id="filePathToSignField" editable="false" promptText="Caminho do arquivo que será assinado" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectFileToSignButton" onAction="#handleSelectFileToSign" text="Selecionar Arquivo" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label minWidth="150" text="Salvar Assinatura em:" />
+            <TextField fx:id="signatureSavePathField" editable="false" promptText="Selecione o caminho para salvar o arquivo de assinatura" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectSignatureSavePathButton" onAction="#handleSelectSignatureSavePath" text="Salvar Como" />
+        </HBox>
+        
+        <Region VBox.vgrow="ALWAYS" /> <Button fx:id="signFileButton" onAction="#handleSignFile" prefWidth="200.0" text="Assinar Arquivo" />
+        
+    </children>
+</VBox>

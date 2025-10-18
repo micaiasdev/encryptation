@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<VBox alignment="TOP_CENTER" prefHeight="450.0" prefWidth="600.0" spacing="15.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.SignatureVerificationController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Text style="-fx-font-weight: bold; -fx-font-size: 16;" text="Verificação de Assinatura Digital" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button mnemonicParsing="false" text="&lt;" fx:id="backButton" />
+        </HBox>
+        <Separator />
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label text="Chave Pública (.pem):" minWidth="150" />
+            <TextField fx:id="publicKeyPathField" editable="false" promptText="Caminho do arquivo de chave pública" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectPublicKeyButton" onAction="#handleSelectPublicKeyFile" text="Selecionar Chave" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label text="Arquivo em Claro (Original):" minWidth="150" />
+            <TextField fx:id="originalFilePathField" editable="false" promptText="Caminho do arquivo original (não assinado)" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectOriginalFileButton" onAction="#handleSelectOriginalFile" text="Selecionar Arquivo" />
+        </HBox>
+
+        <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;">
+            <Label text="Arquivo da Assinatura (.txt):" minWidth="150" />
+            <TextField fx:id="signatureFilePathField" editable="false" promptText="Caminho do arquivo com a assinatura digital" HBox.hgrow="ALWAYS" />
+            <Button fx:id="selectSignatureFileButton" onAction="#handleSelectSignatureFile" text="Selecionar Assinatura" />
+        </HBox>
+        
+        <Region VBox.vgrow="ALWAYS" /> <Label fx:id="verificationResultLabel" text="Resultado da Verificação: Aguardando..." style="-fx-font-weight: bold;" />
+        
+        <Button fx:id="verifySignatureButton" prefWidth="200.0" text="Verificar Assinatura" onAction="#handleVerifySignature" />
+        
+    </children>
+</VBox>
