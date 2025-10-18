@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HexFormat;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,6 +25,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class AesEncryptController {
+  @FXML
+  private MyFile file;
 
   @FXML
   private Button backPageButton;
@@ -202,9 +205,65 @@ public class AesEncryptController {
   }
 
   @FXML
-  void validFileFormat() {
-    if (inputFormatComboBox.getValue().equalsIgnoreCase(("HEX"))) {
+  Boolean isHex(String s) {
+    if (s == null)
+      return false;
+    s = s.trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s.replaceAll("[\\s:-]", "");
 
+    try {
+      HexFormat.of().parseHex(s);
+      return true;
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
+  @FXML
+  public static boolean isBase64(String s) {
+    if (s == null)
+      return false;
+    String t = s.trim();
+    int comma = t.indexOf(',');
+    if (comma >= 0 && t.substring(0, comma).toLowerCase().contains("base64")) {
+      t = t.substring(comma + 1);
+    }
+    t = t.replaceAll("\\s+", ""); // remove quebras/espacos
+    if (t.isEmpty())
+      return false;
+    if (t.length() % 4 != 0)
+      return false; // tipicamente múltiplo de 4
+    // proteção mínima contra inputs grandes demais
+    if (t.length() > 10 * 1024 * 1024)
+      return false; // 10 MB
+    try {
+      java.util.Base64.getDecoder().decode(t);
+      return true;
+    } catch (IllegalArgumentException e) {
+      try {
+        java.util.Base64.getUrlDecoder().decode(t);
+        return true;
+      } catch (IllegalArgumentException ex) {
+        return false;
+      }
+    }
+  }
+
+  @FXML
+  Boolean validFileFormat() throws IOException {
+    String fileContent = Files.readString(filePathSelected);
+    if (inputFormatComboBox.getValue().equalsIgnoreCase(("HEX"))) {
+      if (!isHex(fileContent))
+        return false;
+      else
+        return true;
+    } else {
+      if (!isBase64(fileContent))
+        return false;
+      else
+        return true;
     }
   }
 
