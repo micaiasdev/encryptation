@@ -15,7 +15,7 @@
          </font>
       </Label>
       <Button fx:id="next_button" layoutX="260.0" layoutY="223.0" mnemonicParsing="false" onAction="#nextPage" text="Seguir" />
-      <SplitMenuButton fx:id="split_menu_button" layoutX="208.0" layoutY="168.0" mnemonicParsing="false" text="Técnicas criptográficas">
+      <SplitMenuButton fx:id="split_menu_button" layoutX="208.0" layoutY="168.0" mnemonicParsing="false" text="Selecione a opção">
         <items>
           <MenuItem fx:id="Encrypt_AES" mnemonicParsing="false" text="Encriptação AES" />
           <MenuItem fx:id="Dencrypt_AES" mnemonicParsing="false" text="Decriptação AES" />

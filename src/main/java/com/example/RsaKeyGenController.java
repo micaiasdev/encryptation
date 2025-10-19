@@ -85,6 +85,7 @@ public class RsaKeyGenController {
       Alert alert = new Alert(AlertType.CONFIRMATION);
       alert.setTitle("SUCESSO");
       alert.setContentText("ARQUIVOS SALVOS COM SUCESSO");
+      alert.showAndWait();
     } catch (Exception e) {
       alertGenerate("ERRO", e.toString());
       ;

@@ -43,7 +43,7 @@ public class Generatekeys {
   }
 
   public void createPEMPublicKey(Path filePath) throws Exception {
-    String pem_format = "-----BEGIN PUBLIC KEY----- %s\n-----END PUBLIC KEY-----";
+    String pem_format = "-----BEGIN PUBLIC KEY-----\n %s\n-----END PUBLIC KEY-----";
     Path path_file = Paths.get(filePath.toString() + "/publicKey.pem");
     String stringPrivateKey = Base64.getEncoder().encodeToString(getPublicKey());
     Files.writeString(path_file, String.format(pem_format, stringPrivateKey));
