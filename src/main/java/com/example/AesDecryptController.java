@@ -109,13 +109,21 @@ public class AesDecryptController {
 
   @FXML
   Boolean hexFieldValidate(TextField textField, String fieldType) {
+    int fieldBytesLen = HexFormat.of().parseHex(textField.getText()).length;
     if (fieldType.equals("KEY")) {
-      int fieldBytesLen = HexFormat.of().parseHex(textField.getText()).length;
       return (fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32) && isHex(textField.getText());
     } else {
-      int fieldBytesLen = HexFormat.of().parseHex(textField.getText()).length;
       return fieldBytesLen == 16 && isHex(textField.getText());
     }
+  }
+
+  @FXML
+  Boolean utfFieldValidate(TextField textField, String fieldType) {
+    int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length;
+    if (fieldType.equals("KEY"))
+      return fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32;
+    else
+      return fieldBytesLen == 16;
   }
 
   @FXML
