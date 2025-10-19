@@ -40,7 +40,7 @@
 
             <HBox spacing="5.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 5;" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <children>
-                    <TextField fx:id="keyField" onKeyTyped="#wrongKeyField" promptText="Key" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="keyField" onAction="#wrongIvFieldAction" onKeyTyped="#wrongKeyField" promptText="Key" HBox.hgrow="ALWAYS" />
                     <ComboBox fx:id="keyFormatComboBox" onAction="#wrongKeyFieldAction" prefWidth="80.0" promptText="HEX">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
@@ -57,7 +57,7 @@
 
             <HBox spacing="5.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <children>
-                    <TextField fx:id="ivField" onKeyTyped="#wrongIvField" promptText="IV" HBox.hgrow="ALWAYS" />
+                    <TextField fx:id="ivField" onAction="#wrongIvFieldAction" onKeyTyped="#wrongIvField" promptText="IV" HBox.hgrow="ALWAYS" />
                     <ComboBox fx:id="ivFormatComboBox" onAction="#wrongIvFieldAction" prefWidth="80.0" promptText="HEX">
                         <items>
                             <FXCollections fx:factory="observableArrayList">

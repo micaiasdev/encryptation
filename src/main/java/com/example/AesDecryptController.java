@@ -1,18 +1,27 @@
 package com.example;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HexFormat;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
 public class AesDecryptController {
+
+  @FXML
+  private Path filePathSelected;
 
   @FXML
   private Button backButton;
@@ -24,25 +33,25 @@ public class AesDecryptController {
   private TextField filePathField;
 
   @FXML
-  private ComboBox<?> inputFormatComboBox;
+  private ComboBox<String> inputFormatComboBox;
 
   @FXML
   private TextField ivField;
 
   @FXML
-  private ComboBox<?> ivFormatComboBox;
+  private ComboBox<String> ivFormatComboBox;
 
   @FXML
   private TextField keyField;
 
   @FXML
-  private ComboBox<?> keyFormatComboBox;
+  private ComboBox<String> keyFormatComboBox;
 
   @FXML
-  private ComboBox<?> modeComboBox;
+  private ComboBox<String> modeComboBox;
 
   @FXML
-  private ComboBox<?> outputFormatComboBox;
+  private ComboBox<String> outputFormatComboBox;
 
   @FXML
   private Button selectFileButton;
@@ -50,6 +59,15 @@ public class AesDecryptController {
   @FXML
   void backButton(ActionEvent event) throws IOException {
     App.setRoot("init");
+  }
+
+  @FXML
+  void alertGenerate(String title, String content) {
+    Alert alert = new Alert(AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setContentText(content);
+    alert.showAndWait();
+
   }
 
   @FXML
@@ -66,6 +84,9 @@ public class AesDecryptController {
       java.util.HexFormat.of().parseHex(s);
       return true;
     } catch (IllegalArgumentException ex) {
+      return false;
+    } catch (Exception e) {
+      System.out.println("AQUI");
       return false;
     }
   }
@@ -101,16 +122,16 @@ public class AesDecryptController {
 
   @FXML
   void modifyValidateBackgroundField(TextField textField, Boolean validation) {
-    if (validation)
-      textField.setStyle("fx-background-color:#ffc1c1ff");
+    if (!validation)
+      textField.setStyle("-fx-background-color: #ffc1c1ff");
     else
-      textField.setStyle("fx-background-color:#ffffffff");
+      textField.setStyle("-fx-background-color:#ffffffff");
   }
 
   @FXML
   Boolean hexFieldValidate(TextField textField, String fieldType) {
-    int fieldBytesLen = HexFormat.of().parseHex(textField.getText()).length;
-    if (fieldType.equals("KEY")) {
+    int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length / 2;
+    if (fieldType.equalsIgnoreCase("KEY")) {
       return (fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32) && isHex(textField.getText());
     } else {
       return fieldBytesLen == 16 && isHex(textField.getText());
@@ -120,7 +141,7 @@ public class AesDecryptController {
   @FXML
   Boolean utfFieldValidate(TextField textField, String fieldType) {
     int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length;
-    if (fieldType.equals("KEY"))
+    if (fieldType.equalsIgnoreCase("KEY"))
       return fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32;
     else
       return fieldBytesLen == 16;
@@ -129,42 +150,141 @@ public class AesDecryptController {
   @FXML
   void wrongKeyFieldValid(KeyEvent event) {
     // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(keyField, hexFieldValidate(keyField, "KEY"));
     // UTF_8
+    else
+      modifyValidateBackgroundField(keyField, utfFieldValidate(keyField, "KEY"));
   }
 
   @FXML
   void wrongKeyFieldValidOnAction(ActionEvent event) {
-
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(keyField, hexFieldValidate(keyField, "KEY"));
+    // UTF_8
+    else
+      modifyValidateBackgroundField(keyField, utfFieldValidate(keyField, "KEY"));
   }
 
   @FXML
   void wrongIvFieldValid(KeyEvent event) {
-
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
+    // UTF_8
+    else
+      modifyValidateBackgroundField(ivField, utfFieldValidate(ivField, "IV"));
   }
 
   @FXML
   void wrongIvFieldValidOnAction(ActionEvent event) {
-
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
+    // UTF_8
+    else
+      modifyValidateBackgroundField(ivField, utfFieldValidate(ivField, "IV"));
   }
 
   @FXML
-  void keyFieldValid() {
+  Boolean validFileFormat() throws IOException {
+    if (filePathSelected == null)
+      return false;
+    String fileContent = new String(Files.readAllBytes(filePathSelected), java.nio.charset.StandardCharsets.US_ASCII);
+    String inputFormat = inputFormatComboBox == null ? null : inputFormatComboBox.getValue();
+    if (inputFormat == null)
+      return false;
 
+    if (inputFormat.equalsIgnoreCase("HEX")) {
+      return isHex(fileContent);
+    } else {
+      return isBase64(fileContent);
+    }
   }
 
   @FXML
-  void ivParameterFiledValid() {
-
+  boolean keyFieldValid() {
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      if (hexFieldValidate(keyField, "KEY")) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (utfFieldValidate(keyField, "KEY")) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 
   @FXML
-  void handleDecryptFile(ActionEvent event) {
+  Boolean ivParameterFieldValid() {
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      if (hexFieldValidate(ivField, "IV")) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (utfFieldValidate(ivField, "IV")) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
 
+  void validAllInputs() throws IOException {
+    try {
+      if (validFileFormat()) {
+        alertGenerate("Formato de entrada inválido",
+            "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
+        throw new IllegalArgumentException("Invalid File Format");
+      }
+
+      if (!keyFieldValid()) {
+        alertGenerate("Tamanho de chave inválido",
+            "O tamanho da chave é inválido. O AES aceita 128, 192 ou 256 bits (16, 24 ou 32 bytes). Verifique o tamanho informado.");
+        throw new IllegalArgumentException("Invalid key");
+      }
+
+      if (!ivParameterFieldValid()) {
+        alertGenerate("IV inválido",
+            "O vetor de inicialização (IV) tem tamanho inválido. Para AES utilize 16 bytes (128 bits). Verifique o valor fornecido.");
+        throw new IllegalArgumentException("Iv Parameter Invalid");
+      }
+    } catch (NullPointerException e) {
+      System.out.println("VALID INPUT PORBLEMA");
+      System.out.println(e);
+    }
   }
 
   @FXML
   void handleSelectFile(ActionEvent event) {
+    try {
+      FileChooser fileChooser = new FileChooser();
+      fileChooser.setTitle("Selecione o Arquivo para Fazer a Encriptação");
+      Window stage = selectFileButton.getScene().getWindow();
+      File selectedFile = fileChooser.showOpenDialog(stage);
+      if (selectedFile == null)
+        return;
+      filePathField.setText(selectedFile.getAbsolutePath());
+      filePathSelected = Paths.get(selectedFile.getAbsolutePath());
+    } catch (Exception e) {
+      Alert alert = new Alert(AlertType.ERROR);
+      alert.setTitle("Arquivo não selecionado");
+      alert.setContentText("Selecione um arquivo para continuar");
+      System.out.println(e);
+    }
+  }
 
+  @FXML
+  void handleDecryptFile(ActionEvent event) throws IOException {
+    validAllInputs();
+    System.out.println("DECRYPTANDO");
   }
 
 }
