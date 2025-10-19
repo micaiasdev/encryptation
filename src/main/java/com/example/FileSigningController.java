@@ -8,11 +8,19 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileSigningController {
 
   @FXML
   private Button backButton;
+
+  @FXML
+  private Path filePathSave;
+
+  @FXML
+  private Path filePathSelected;
 
   @FXML
   private TextField privateKeyPathField;
@@ -47,6 +55,7 @@ public class FileSigningController {
 
     if (selectedFile != null) {
       field.setText(selectedFile.getAbsolutePath());
+      filePathSelected = Paths.get(selectedFile.getAbsolutePath())
     }
   }
 

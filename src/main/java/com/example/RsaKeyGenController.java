@@ -1,16 +1,25 @@
 package com.example;
 
+import com.crypto.Generatekeys;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.DirectoryChooser; // Provavelmente DirectoryChooser é mais adequado
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class RsaKeyGenController {
+  @FXML
+  private Path filePathSave;
 
   @FXML
   private ComboBox<String> keySizeComboBox;
@@ -36,30 +45,32 @@ public class RsaKeyGenController {
     }
   }
 
-  /**
-   * Manipula a seleção do diretório para salvar as chaves.
-   */
   @FXML
-  private void handleSelectSavePath(ActionEvent event) {
+  void selectSavePathCryptoFile() throws IOException {
     DirectoryChooser directoryChooser = new DirectoryChooser();
-    directoryChooser.setTitle("Selecione o Diretório para Salvar as Chaves RSA");
+    directoryChooser.setTitle("Selecione a pasta para salvar o arquivo");
 
-    Window stage = selectSavePathButton.getScene().getWindow();
-    File selectedDirectory = directoryChooser.showDialog(stage);
+    Window stage = generateKeyButton.getScene().getWindow();
+    File saveFile = directoryChooser.showDialog(stage);
 
-    if (selectedDirectory != null) {
-      savePathField.setText(selectedDirectory.getAbsolutePath());
-    } else {
-      savePathField.setText("Nenhum diretório selecionado");
+    if (saveFile != null) {
+      filePathSave = Paths.get(saveFile.getAbsolutePath());
+      savePathField.setText(saveFile.getAbsolutePath());
     }
   }
 
-  /**
-   * Inicia o processo de geração das chaves RSA.
-   */
+  @FXML
+  void alertGenerate(String title, String content) {
+    Alert alert = new Alert(AlertType.ERROR);
+    alert.setTitle(title);
+    alert.setContentText(content);
+    alert.showAndWait();
+
+  }
+
   @FXML
   private void handleGenerateKeys(ActionEvent event) {
-    String keySize = keySizeComboBox.getValue();
+    int keySize = Integer.parseInt(keySizeComboBox.getValue());
     String savePath = savePathField.getText();
 
     if (savePath.isEmpty() || savePath.equals("Nenhum diretório selecionado")) {
@@ -67,8 +78,18 @@ public class RsaKeyGenController {
       return;
     }
 
-    System.out.println("Gerando chaves RSA de " + keySize + " bits em: " + savePath);
-    // Implemente a lógica de geração e salvamento de chaves RSA aqui.
+    try {
+      Generatekeys generatekeys = new Generatekeys(keySize);
+      generatekeys.createPEMPrivateKey(filePathSave);
+      generatekeys.createPEMPublicKey(filePathSave);
+      Alert alert = new Alert(AlertType.CONFIRMATION);
+      alert.setTitle("SUCESSO");
+      alert.setContentText("ARQUIVOS SALVOS COM SUCESSO");
+    } catch (Exception e) {
+      alertGenerate("ERRO", e.toString());
+      ;
+    }
+
   }
 
   @FXML

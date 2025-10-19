@@ -14,39 +14,75 @@
 <?import javafx.scene.text.Text?>
 
 <VBox alignment="TOP_CENTER" prefHeight="400.0" prefWidth="600.0" spacing="10.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.RsaKeyGenController">
+
     <padding>
+
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+
     </padding>
+
     <children>
+
         <HBox alignment="CENTER_LEFT" spacing="10.0">
+
             <Text fx:id="titleText" style="-fx-font-weight: bold; -fx-font-size: 16;" text="RSA Key Generation" />
+
             <Region HBox.hgrow="ALWAYS" />
+
             <Button fx:id="backButton" mnemonicParsing="false" onAction="#backButton" text="&lt;" />
+
         </HBox>
+
         <Separator />
 
+
+
         <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 5;">
+
             <Label text="Key Size (bits):" />
+
             <ComboBox fx:id="keySizeComboBox" prefWidth="120.0" promptText="2048" HBox.hgrow="ALWAYS">
+
                 <items>
+
                     <FXCollections fx:factory="observableArrayList">
+
                         <String fx:value="1024" />
+
                         <String fx:value="2048" />
+
                     </FXCollections>
+
                 </items>
+
                 <value>
+
                     <String fx:value="2048" />
+
                 </value>
+
             </ComboBox>
+
         </HBox>
-        
+
+       
+
         <Region VBox.vgrow="ALWAYS" /> <HBox alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="NEVER">
+
             <Label text="Salvar em:" />
+
             <TextField fx:id="savePathField" editable="false" promptText="Selecione o diretório para salvar as chaves" HBox.hgrow="ALWAYS" />
-            <Button fx:id="selectSavePathButton" onAction="#handleSelectSavePath" text="Selecionar Pasta" />
+
+            <Button fx:id="selectSavePathButton" onAction="#selectSavePathCryptoFile" text="Selecionar Pasta" />
+
         </HBox>
-        
+
+       
+
         <Button fx:id="generateKeyButton" onAction="#handleGenerateKeys" prefWidth="200.0" text="Gerar Chaves RSA" />
-        
+
+       
+
     </children>
+
 </VBox>
