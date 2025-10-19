@@ -147,7 +147,7 @@ public class AesEncryptController {
   @FXML
   void wrongIvFieldValid(KeyEvent event) {
     // HEXADECIMAL
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX"))
       modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
     // UTF_8
     else
@@ -157,7 +157,7 @@ public class AesEncryptController {
   @FXML
   void wrongIvFieldValidOnAction(ActionEvent event) {
     // HEXADECIMAL
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX"))
       modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
     // UTF_8
     else
@@ -292,6 +292,23 @@ public class AesEncryptController {
     }
   }
 
+  void validFileAndKey() throws IOException {
+    try {
+      if (!validFileFormat()) {
+        alertGenerate("Formato de entrada inválido",
+            "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
+        throw new IllegalArgumentException("Invalid File Format");
+      }
+      if (!keyFieldValid()) {
+        alertGenerate("Tamanho de chave inválido",
+            "O tamanho da chave é inválido. O AES aceita 128, 192 ou 256 bits (16, 24 ou 32 bytes). Verifique o tamanho informado.");
+        throw new IllegalArgumentException("Invalid key");
+      }
+    } catch (NullPointerException e) {
+      alertGenerate("Arquivo não selecionado", "Selecione um arquivo");
+    }
+  }
+
   @FXML
   void handleSelectFile(ActionEvent event) {
     try {
@@ -325,26 +342,100 @@ public class AesEncryptController {
   }
 
   @FXML
+  byte[] getHexKey() {
+    String s = keyField.getText().trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    return HexFormat.of().parseHex(s);
+  }
+
+  @FXML
+  byte[] getUTFKey() {
+    return keyField.getText().getBytes(StandardCharsets.UTF_8);
+  }
+
+  @FXML
+  byte[] getHexIv() {
+    String s = ivField.getText().trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    return HexFormat.of().parseHex(s);
+  }
+
+  @FXML
+  byte[] getUTFIv() {
+    return ivField.getText().getBytes(StandardCharsets.UTF_8);
+  }
+
+  @FXML
+  byte[] getValueFieldKey() {
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      return getHexKey();
+    } else {
+      return getUTFKey();
+    }
+  }
+
+  @FXML
+  byte[] getValueFieldIv() {
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      return getHexIv();
+    } else {
+      return getUTFIv();
+    }
+  }
+
+  @FXML
+  byte[] getCiphertextBytes() throws IOException {
+    if (filePathSelected == null)
+      throw new IllegalStateException("filePathSelected == null");
+    byte[] raw = Files.readAllBytes(filePathSelected);
+    String inputFormat = inputFormatComboBox == null ? null : inputFormatComboBox.getValue();
+    if (inputFormat == null)
+      throw new IllegalStateException("inputFormat == null");
+
+    String s = new String(raw, StandardCharsets.US_ASCII).trim();
+    if (inputFormat.equalsIgnoreCase("HEX")) {
+      if (s.startsWith("0x") || s.startsWith("0X"))
+        s = s.substring(2);
+      s = s.replaceAll("[\\s:-]", "");
+      return HexFormat.of().parseHex(s);
+    } else { // assume Base64
+      s = s.replaceAll("\\s+", "");
+      return s.getBytes(StandardCharsets.UTF_8);
+    }
+  }
+
+  // A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1
+  // qwertyuiopasdfgh
+  @FXML
   void encryptionFile() throws Exception {
     try {
+      if (modeComboBox.getValue().equalsIgnoreCase("CBC")) {
+        validAllInputs();
+      } else {
+        validFileAndKey();
+      }
       Aes aes;
-      validAllInputs();
-      MyFile file = new MyFile(filePathSelected);
+      byte[] cipherText = getCiphertextBytes();
+
       if (getKeyFormatSelected().equals("HEX")) {
         if (getModeEncryptFormatSelected().equals("CBC")) {
-          aes = new Aes(HexFormat.of().parseHex(keyField.getText()),
-              HexFormat.of().parseHex(ivField.getText()), getModeEncryptFormatSelected());
+          aes = new Aes(getValueFieldKey(),
+              getValueFieldIv(), getModeEncryptFormatSelected());
         } else {
-          aes = new Aes(HexFormat.of().parseHex(keyField.getText()), getModeEncryptFormatSelected());
+          aes = new Aes(getValueFieldKey(), getModeEncryptFormatSelected());
         }
       } else {
         if (getModeEncryptFormatSelected().equals("CBC"))
-          aes = new Aes(keyField.getText().getBytes(StandardCharsets.UTF_8),
-              ivField.getText().getBytes(StandardCharsets.UTF_8), getModeEncryptFormatSelected());
+          aes = new Aes(getValueFieldKey(),
+              getValueFieldIv(), getModeEncryptFormatSelected());
         else
-          aes = new Aes(keyField.getText().getBytes(StandardCharsets.UTF_8), getModeEncryptFormatSelected());
+          aes = new Aes(getValueFieldKey(), getModeEncryptFormatSelected());
       }
-      MyFile encryptFile = new MyFile(aes.encypt(file.getContent()));
+      MyFile encryptFile = new MyFile(aes.encypt(cipherText));
       selectSavePathCryptoFile();
       if (getOutputFormatSelected().equalsIgnoreCase("HEX")) {
         Files.writeString(filePathSave, encryptFile.getHexEncode());
@@ -352,7 +443,7 @@ public class AesEncryptController {
         alert.setContentText("Arquivo salvo com sucesso");
         alert.showAndWait();
       } else {
-        Files.writeString(filePathSave, encryptFile.getBase64Encode());
+        Files.writeString(filePathSave, encryptFile.getStringContent());
         Alert alert = new Alert(AlertType.INFORMATION);
         alert.setContentText("Arquivo salvo com sucesso");
         alert.showAndWait();

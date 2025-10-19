@@ -276,6 +276,26 @@ public class AesDecryptController {
     }
   }
 
+  void validFileAndKey() throws IOException {
+    try {
+      if (!validFileFormat()) {
+        alertGenerate("Formato de entrada inválido",
+            "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
+        throw new IllegalArgumentException("Invalid File Format");
+      }
+
+      if (!keyFieldValid()) {
+        alertGenerate("Tamanho de chave inválido",
+            "O tamanho da chave é inválido. O AES aceita 128, 192 ou 256 bits (16, 24 ou 32 bytes). Verifique o tamanho informado.");
+        throw new IllegalArgumentException("Invalid key");
+      }
+
+    } catch (NullPointerException e) {
+      System.out.println("VALID INPUT PORBLEMA");
+      System.out.println(e);
+    }
+  }
+
   @FXML
   void handleSelectFile(ActionEvent event) {
     try {
@@ -393,7 +413,11 @@ public class AesDecryptController {
 
   @FXML
   void handleDecryptFile(ActionEvent event) throws IOException {
-    validAllInputs();
+    if (modeComboBox.getValue().equalsIgnoreCase("CBC")) {
+      validAllInputs();
+    } else {
+      validFileAndKey();
+    }
     try {
       byte[] ciphertext = getCiphertextBytes();
 
