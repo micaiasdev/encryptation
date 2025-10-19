@@ -1,11 +1,14 @@
 package com.example;
 
+import com.crypto.Aes;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HexFormat;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,6 +22,11 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 
 public class AesDecryptController {
+  @FXML
+  private MyFile file;
+
+  @FXML
+  private Path filePathSave;
 
   @FXML
   private Path filePathSelected;
@@ -282,9 +290,88 @@ public class AesDecryptController {
   }
 
   @FXML
+  void selectSavePathCryptoFile() throws IOException {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.setTitle("Selecione a pasta para salvar o arquivo");
+    fileChooser.setInitialFileName("Arquivo Descriptografado.txt");
+
+    Window stage = decryptButton.getScene().getWindow();
+    File saveFile = fileChooser.showSaveDialog(stage);
+
+    if (saveFile != null)
+      filePathSave = Paths.get(saveFile.getAbsolutePath());
+  }
+
+  @FXML
+  byte[] getHexKey() {
+    return HexFormat.of().parseHex(keyField.getText());
+  }
+
+  @FXML
+  byte[] getUTFKey() {
+    return keyField.getText().getBytes(StandardCharsets.UTF_8);
+  }
+
+  @FXML
+  byte[] getHexIv() {
+    return HexFormat.of().parseHex(ivField.getText());
+  }
+
+  @FXML
+  byte[] getUTFIv() {
+    return ivField.getText().getBytes(StandardCharsets.UTF_8);
+  }
+
+  @FXML
+  byte[] getValueFieldKey() {
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      return getHexKey();
+    } else {
+      return getUTFKey();
+    }
+  }
+
+  @FXML
+  byte[] getValueFieldIv() {
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      return getHexIv();
+    } else {
+      return getUTFIv();
+    }
+  }
+
+  @FXML
+  void saveDecryptFile(MyFile decryptFile) throws IOException {
+    selectSavePathCryptoFile();
+    if (outputFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      Files.writeString(filePathSave, decryptFile.getHexEncode());
+      Alert alert = new Alert(AlertType.INFORMATION);
+      alert.setContentText("Arquivo salvo com sucesso");
+      alert.showAndWait();
+    }
+  }
+
+  @FXML
   void handleDecryptFile(ActionEvent event) throws IOException {
     validAllInputs();
-    System.out.println("DECRYPTANDO");
+    try {
+      MyFile file = new MyFile(filePathSelected);
+      if (modeComboBox.getValue().equalsIgnoreCase("CBC")) {
+        Aes aes = new Aes(getValueFieldKey(), getValueFieldIv(), modeComboBox.getValue());
+        MyFile decryptFile = new MyFile(aes.decrypt(file.getContent()));
+        saveDecryptFile(decryptFile);
+      } else {
+        Aes aes = new Aes(getValueFieldKey(), modeComboBox.getValue());
+        MyFile decryptFile = new MyFile(aes.decrypt(file.getContent()));
+        saveDecryptFile(decryptFile);
+      }
+    } catch (Exception e) {
+      System.out.println(e);
+      Alert alert = new Alert(AlertType.INFORMATION);
+      alert.setContentText("Não foi possível descriptografar com esse parâmetros");
+      alert.showAndWait();
+    }
+
   }
 
 }

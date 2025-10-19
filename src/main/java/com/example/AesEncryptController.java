@@ -159,7 +159,7 @@ public class AesEncryptController {
   @FXML
   Boolean validKeyField() {
     int byteskeyLen = keyField.getText().getBytes(StandardCharsets.UTF_8).length;
-    if (getKeyFormatSelected().equals("UTF-8")) {
+    if (getKeyFormatSelected().equalsIgnoreCase("UTF-8")) {
       if (!(byteskeyLen == 16 || byteskeyLen == 24 || byteskeyLen == 32))
         return false;
       else
@@ -175,7 +175,7 @@ public class AesEncryptController {
   @FXML
   Boolean validIvField() {
     int bytesIvLen = ivField.getText().getBytes(StandardCharsets.UTF_8).length;
-    if (getIvParameterFormatSelected().equals("UTF-8")) {
+    if (getIvParameterFormatSelected().equalsIgnoreCase("UTF-8")) {
       if (!(bytesIvLen == 16)) {
         return false;
       } else {
