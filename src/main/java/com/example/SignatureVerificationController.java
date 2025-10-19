@@ -12,10 +12,13 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PublicKey;
+import java.util.Base64;
+import java.util.HexFormat;
 
 public class SignatureVerificationController {
 
@@ -55,6 +58,11 @@ public class SignatureVerificationController {
   @FXML
   private Button verifySignatureButton;
 
+  @FXML
+  void backButton() throws IOException {
+    App.setRoot("init");
+  }
+
   // Helper para abrir o FileChooser e definir o campo de texto
   private void openFileChooserAndSetPath(String typePath, TextField field, String title,
       FileChooser.ExtensionFilter... filters) {
@@ -86,16 +94,103 @@ public class SignatureVerificationController {
 
   @FXML
   private void handleSelectOriginalFile(ActionEvent event) {
-    openFileChooserAndSetPath("SIGN", originalFilePathField, "Selecione o Arquivo em Claro (Original)",
+    openFileChooserAndSetPath("Message", originalFilePathField, "Selecione o Arquivo em Claro (Original)",
         new FileChooser.ExtensionFilter("Todos os Arquivos", "*.*"));
     verificationResultLabel.setText("Resultado da Verificação: Aguardando...");
   }
 
   @FXML
   private void handleSelectSignatureFile(ActionEvent event) {
-    openFileChooserAndSetPath("Message", signatureFilePathField, "Selecione o Arquivo da Assinatura Digital",
+    openFileChooserAndSetPath("SIGN", signatureFilePathField, "Selecione o Arquivo da Assinatura Digital",
         new FileChooser.ExtensionFilter("Signature Files", "*.sig", "*.bin", "*.txt"));
     verificationResultLabel.setText("Resultado da Verificação: Aguardando...");
+  }
+
+  @FXML
+  boolean isHex(String s) {
+    if (s == null)
+      return false;
+    s = s.trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    if (s.isEmpty())
+      return false;
+    try {
+      java.util.HexFormat.of().parseHex(s);
+      return true;
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
+  @FXML
+  public static boolean isBase64(String s) {
+    if (s == null)
+      return false;
+    String t = s.trim();
+    int comma = t.indexOf(',');
+    if (comma >= 0 && t.substring(0, comma).toLowerCase().contains("base64")) {
+      t = t.substring(comma + 1);
+    }
+    t = t.replaceAll("\\s+", "");
+    if (t.isEmpty())
+      return false;
+    if (t.length() > 10 * 1024 * 1024)
+      return false; // proteção contra OOM
+
+    // Tentar decoder — aceita Standard e URL-safe
+    try {
+      java.util.Base64.getDecoder().decode(t);
+      return true;
+    } catch (IllegalArgumentException e) {
+      try {
+        java.util.Base64.getUrlDecoder().decode(t);
+        return true;
+      } catch (IllegalArgumentException ex) {
+        return false;
+      }
+    }
+  }
+
+  private byte[] readSignatureBytes(java.nio.file.Path path) throws java.io.IOException {
+    byte[] raw = java.nio.file.Files.readAllBytes(path);
+
+    // detecta se parece binário (bytes não imprimíveis)
+    boolean hasNonPrintable = false;
+    for (byte b : raw) {
+      int v = b & 0xFF;
+      if (v < 32 && v != '\n' && v != '\r' && v != '\t') {
+        hasNonPrintable = true;
+        break;
+      }
+    }
+    if (hasNonPrintable) {
+      // já é binário -> retorno direto
+      return raw;
+    }
+
+    // texto legível -> tentar Base64 primeiro, depois HEX, senão retornar os bytes
+    // textuais
+    String s = new String(raw, java.nio.charset.StandardCharsets.US_ASCII).trim();
+    s = s.replaceAll("\\s+", ""); // remover quebras e espaços
+
+    // tentar Base64
+    try {
+      return java.util.Base64.getDecoder().decode(s);
+    } catch (IllegalArgumentException ex) {
+      // não é base64
+    }
+
+    // tentar HEX
+    try {
+      return java.util.HexFormat.of().parseHex(s);
+    } catch (IllegalArgumentException ex) {
+      // não é hex
+    }
+
+    // fallback: retorno dos bytes lidos (texto como bytes)
+    return raw;
   }
 
   /**
@@ -120,8 +215,28 @@ public class SignatureVerificationController {
     try {
       Rsa rsa = new Rsa();
       byte[] file = Files.readAllBytes(filePathMessage);
-      byte[] signature = Files.readAllBytes(filePathSign);
+      System.out.println("READ signature from: " + filePathSign.toAbsolutePath());
+      byte[] signature = readSignatureBytes(filePathSign);
+      System.out.println("Signature read length = " + signature.length);
+      try {
+        System.out.println("Signature read hex prefix = "
+            + HexFormat.of().formatHex(signature).substring(0, Math.min(64, signature.length * 2)));
+      } catch (Exception ex) {
+        // ignore
+      }
       PublicKey key = rsa.loadPublicKey(filePathKey.toString());
+
+      if (key == null) {
+        verificationResultLabel.setText("Erro: chave pública inválida (null)");
+        verificationResultLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: red;");
+        return;
+      }
+
+      // opção: checar tamanho esperado da assinatura (ex.: RSA-2048 -> 256 bytes)
+      if (signature.length < 64) { // limite heurístico
+        System.out
+            .println("AVISO: assinatura muito curta -> possivelmente texto/format inválido. len=" + signature.length);
+      }
 
       boolean isCoherent = rsa.signatureVerify(file, signature, key);
 

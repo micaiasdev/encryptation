@@ -137,15 +137,49 @@ public class FileSigningController {
     try {
       Rsa rsa = new Rsa();
       PrivateKey privateKey = rsa.loadPrivateKey(filePathKeySelected.toString());
+      if (privateKey == null) {
+        alertGenerate("ERRO NA ASSINATURA", "Não foi possível carregar a chave privada.");
+        return;
+      }
 
-      Signature signature = rsa.signature(Files.readAllBytes(filePathSelected), privateKey);
-      Files.write(filePathSave, signature.sign());
+      // ler dados a assinar
+      byte[] dataToSign = Files.readAllBytes(filePathSelected);
 
-      Alert alert = new Alert(AlertType.CONFIRMATION);
+      // gerar assinatura: usar Signature retornado pelo seu Rsa, ou (preferível) um
+      // método que retorne byte[]
+      Signature signature = rsa.signature(dataToSign, privateKey); // seu método atual retorna Signature
+      byte[] sigBytes = rsa.signatureBytes(dataToSign, privateKey); // bytes da assinatura
+
+      // DEBUG: comprimento e base64/hex para inspeção
+      System.out.println("Generated signature length = " + sigBytes.length);
+      System.out.println("Generated signature (base64) = " + java.util.Base64.getEncoder().encodeToString(sigBytes));
+      System.out.println("Generated signature (hex prefix) = "
+          + java.util.HexFormat.of().formatHex(sigBytes).substring(0, Math.min(64, sigBytes.length * 2)));
+
+      // garantir diretório e gravar de forma robusta
+      java.nio.file.Path out = filePathSave;
+      if (out == null)
+        out = Paths.get(signatureSavePathField.getText());
+      java.nio.file.Path parent = out.getParent();
+      if (parent != null && !Files.exists(parent))
+        Files.createDirectories(parent);
+
+      Files.write(out, sigBytes, java.nio.file.StandardOpenOption.CREATE,
+          java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+
+      // ler de volta e confirmar tamanho gravado
+      byte[] wrote = Files.readAllBytes(out);
+      System.out.println("Wrote signature file length = " + wrote.length);
+      if (wrote.length != sigBytes.length) {
+        System.out.println("AVISO: tamanho escrito diferente do gerado!");
+      }
+
+      Alert alert = new Alert(AlertType.INFORMATION);
       alert.setTitle("SUCESSO!");
-      alert.setContentText("ARQUIVO SALVO COM SUCESSO");
+      alert.setContentText("ARQUIVO SALVO COM SUCESSO (len=" + wrote.length + ")");
       alert.showAndWait();
     } catch (Exception e) {
+      e.printStackTrace();
       alertGenerate("ERRO NA ASSINATURA", e.toString());
     }
   }

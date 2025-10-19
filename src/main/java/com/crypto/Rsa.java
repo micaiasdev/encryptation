@@ -95,22 +95,36 @@ public class Rsa {
     }
   }
 
+  public byte[] signatureBytes(byte[] data, PrivateKey privateKey) throws Exception {
+    Signature sig = Signature.getInstance("SHA256withRSA", "BC");
+    sig.initSign(privateKey);
+    sig.update(data);
+    return sig.sign();
+  }
+
   public PublicKey loadPublicKey(String pathFile) throws Exception {
-    try (FileReader fileReader = new FileReader(pathFile);
-        PEMParser pemParser = new PEMParser(fileReader)) {
+    try (java.io.FileReader fileReader = new java.io.FileReader(pathFile);
+        org.bouncycastle.openssl.PEMParser pemParser = new org.bouncycastle.openssl.PEMParser(fileReader)) {
+
       Object object = pemParser.readObject();
+      System.out.println("PEM object class (public) = " + (object == null ? "null" : object.getClass().getName()));
 
-      if (object instanceof SubjectPublicKeyInfo) {
-        SubjectPublicKeyInfo subjectPublicKeyInfo = (SubjectPublicKeyInfo) object;
-        JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+      org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter converter = new org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter()
+          .setProvider("BC");
+
+      if (object instanceof org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) {
+        org.bouncycastle.asn1.x509.SubjectPublicKeyInfo subjectPublicKeyInfo = (org.bouncycastle.asn1.x509.SubjectPublicKeyInfo) object;
         return converter.getPublicKey(subjectPublicKeyInfo);
+      } else if (object instanceof org.bouncycastle.cert.X509CertificateHolder) {
+        org.bouncycastle.cert.X509CertificateHolder cert = (org.bouncycastle.cert.X509CertificateHolder) object;
+        return converter.getPublicKey(cert.getSubjectPublicKeyInfo());
       } else {
-        throw new IllegalArgumentException("Arquivo não compatível");
+        throw new IllegalArgumentException("Arquivo não compatível (public) - tipo retornado: " +
+            (object == null ? "null" : object.getClass().getName()));
       }
-
     } catch (Exception e) {
-      System.out.println(e);
-      return null;
+      e.printStackTrace();
+      throw e;
     }
   }
 }
