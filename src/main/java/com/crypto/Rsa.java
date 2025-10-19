@@ -91,8 +91,8 @@ public class Rsa {
 
     } catch (Exception e) {
       System.out.println(e);
+      return null;
     }
-    return null;
   }
 
   public PublicKey loadPublicKey(String pathFile) throws Exception {
