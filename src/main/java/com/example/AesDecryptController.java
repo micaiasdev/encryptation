@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 
 public class AesDecryptController {
 
@@ -46,6 +47,56 @@ public class AesDecryptController {
   @FXML
   void backButton(ActionEvent event) throws IOException {
     App.setRoot("init");
+  }
+
+  @FXML
+  boolean isHex(String s) {
+    if (s == null)
+      return false;
+    s = s.trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    if (s.isEmpty())
+      return false;
+    try {
+      java.util.HexFormat.of().parseHex(s);
+      return true;
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
+  }
+
+  @FXML
+  void wrongKeyFieldValid(KeyEvent event) {
+    // HEXADECIMAL
+
+    // UTF_8
+  }
+
+  @FXML
+  void wrongKeyFieldValidOnAction(ActionEvent event) {
+
+  }
+
+  @FXML
+  void wrongIvFieldValid(KeyEvent event) {
+
+  }
+
+  @FXML
+  void wrongIvFieldValidOnAction(ActionEvent event) {
+
+  }
+
+  @FXML
+  void keyFieldValid() {
+
+  }
+
+  @FXML
+  void ivParameterFiledValid() {
+
   }
 
   @FXML
