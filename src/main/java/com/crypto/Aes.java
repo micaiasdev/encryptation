@@ -60,7 +60,7 @@ public class Aes {
     String iv = "A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1";
     String data = "OLA";
 
-    System.out.println(key.getBytes(StandardCharsets.UTF_8).length);
+    System.out.println(HexFormat.of().parseHex(iv).length);
 
     MyFile file = new MyFile(data);
     Aes aes = new Aes(key.getBytes(StandardCharsets.UTF_8),
