@@ -27,8 +27,18 @@ public class MyFile {
     return HexFormat.of().formatHex(content);
   }
 
+  public byte[] getHexEncodeBytes() {
+    String content = new String(this.content);
+    return HexFormat.of().parseHex(content);
+  }
+
   public String getBase64Encode() {
     return Base64.getEncoder().encodeToString(content);
+  }
+
+  public String getStringContent() {
+    String content = new String(this.content);
+    return content;
   }
 
   public void setBase64Content() {

@@ -55,20 +55,22 @@ public class Aes {
     return decrypt_data;
   }
 
-  public static void main(String[] args) throws Exception {
-    String key = "qwertyuiopasdfgh";
-    String iv = "A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1";
-    String data = "OLA";
-
-    System.out.println(HexFormat.of().parseHex(iv).length);
-
-    MyFile file = new MyFile(data);
-    Aes aes = new Aes(key.getBytes(StandardCharsets.UTF_8),
-        HexFormat.of().parseHex(iv), "CBC");
-    file.setContent(aes.encypt(file.getContent()));
-    String as = new String(file.getBase64Encode());
-    System.out.println(as);
-    System.out.println(file.getHexEncode());
-  }
+  /*
+   * public static void main(String[] args) throws Exception {
+   * String key = "qwertyuiopasdfgh";
+   * String iv = "A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1A1";
+   * String data = "OLA";
+   * 
+   * System.out.println(HexFormat.of().parseHex(iv).length);
+   * 
+   * MyFile file = new MyFile(data);
+   * Aes aes = new Aes(key.getBytes(StandardCharsets.UTF_8),
+   * HexFormat.of().parseHex(iv), "CBC");
+   * file.setContent(aes.encypt(file.getContent()));
+   * String as = new String(file.getBase64Encode());
+   * System.out.println(as);
+   * System.out.println(file.getHexEncode());
+   * }
+   */
 
 }

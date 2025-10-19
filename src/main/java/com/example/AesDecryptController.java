@@ -138,11 +138,17 @@ public class AesDecryptController {
 
   @FXML
   Boolean hexFieldValidate(TextField textField, String fieldType) {
-    int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length / 2;
+    String s = textField.getText().trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    if (!isHex(s))
+      return false;
+    int len = s.length(); // número de caracteres hex
     if (fieldType.equalsIgnoreCase("KEY")) {
-      return (fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32) && isHex(textField.getText());
+      return len == 32 || len == 48 || len == 64; // 16/24/32 bytes
     } else {
-      return fieldBytesLen == 16 && isHex(textField.getText());
+      return len == 32; // IV -> 16 bytes -> 32 hex chars
     }
   }
 
@@ -178,7 +184,7 @@ public class AesDecryptController {
   @FXML
   void wrongIvFieldValid(KeyEvent event) {
     // HEXADECIMAL
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX"))
       modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
     // UTF_8
     else
@@ -188,7 +194,7 @@ public class AesDecryptController {
   @FXML
   void wrongIvFieldValidOnAction(ActionEvent event) {
     // HEXADECIMAL
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX"))
       modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
     // UTF_8
     else
@@ -230,7 +236,7 @@ public class AesDecryptController {
 
   @FXML
   Boolean ivParameterFieldValid() {
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
       if (hexFieldValidate(ivField, "IV")) {
         return true;
       } else {
@@ -247,7 +253,7 @@ public class AesDecryptController {
 
   void validAllInputs() throws IOException {
     try {
-      if (validFileFormat()) {
+      if (!validFileFormat()) {
         alertGenerate("Formato de entrada inválido",
             "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
         throw new IllegalArgumentException("Invalid File Format");
@@ -304,7 +310,11 @@ public class AesDecryptController {
 
   @FXML
   byte[] getHexKey() {
-    return HexFormat.of().parseHex(keyField.getText());
+    String s = keyField.getText().trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    return HexFormat.of().parseHex(s);
   }
 
   @FXML
@@ -314,7 +324,11 @@ public class AesDecryptController {
 
   @FXML
   byte[] getHexIv() {
-    return HexFormat.of().parseHex(ivField.getText());
+    String s = ivField.getText().trim();
+    if (s.startsWith("0x") || s.startsWith("0X"))
+      s = s.substring(2);
+    s = s.replaceAll("[\\s:-]", "");
+    return HexFormat.of().parseHex(s);
   }
 
   @FXML
@@ -341,10 +355,36 @@ public class AesDecryptController {
   }
 
   @FXML
+  byte[] getCiphertextBytes() throws IOException {
+    if (filePathSelected == null)
+      throw new IllegalStateException("filePathSelected == null");
+    byte[] raw = Files.readAllBytes(filePathSelected);
+    String inputFormat = inputFormatComboBox == null ? null : inputFormatComboBox.getValue();
+    if (inputFormat == null)
+      throw new IllegalStateException("inputFormat == null");
+
+    String s = new String(raw, StandardCharsets.US_ASCII).trim();
+    if (inputFormat.equalsIgnoreCase("HEX")) {
+      if (s.startsWith("0x") || s.startsWith("0X"))
+        s = s.substring(2);
+      s = s.replaceAll("[\\s:-]", "");
+      return HexFormat.of().parseHex(s);
+    } else { // assume Base64
+      s = s.replaceAll("\\s+", "");
+      return java.util.Base64.getDecoder().decode(s);
+    }
+  }
+
+  @FXML
   void saveDecryptFile(MyFile decryptFile) throws IOException {
     selectSavePathCryptoFile();
     if (outputFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
       Files.writeString(filePathSave, decryptFile.getHexEncode());
+      Alert alert = new Alert(AlertType.INFORMATION);
+      alert.setContentText("Arquivo salvo com sucesso");
+      alert.showAndWait();
+    } else {
+      Files.writeString(filePathSave, decryptFile.getStringContent());
       Alert alert = new Alert(AlertType.INFORMATION);
       alert.setContentText("Arquivo salvo com sucesso");
       alert.showAndWait();
@@ -355,20 +395,21 @@ public class AesDecryptController {
   void handleDecryptFile(ActionEvent event) throws IOException {
     validAllInputs();
     try {
-      MyFile file = new MyFile(filePathSelected);
+      byte[] ciphertext = getCiphertextBytes();
+
       if (modeComboBox.getValue().equalsIgnoreCase("CBC")) {
         Aes aes = new Aes(getValueFieldKey(), getValueFieldIv(), modeComboBox.getValue());
-        MyFile decryptFile = new MyFile(aes.decrypt(file.getContent()));
+        MyFile decryptFile = new MyFile(aes.decrypt(ciphertext));
         saveDecryptFile(decryptFile);
       } else {
         Aes aes = new Aes(getValueFieldKey(), modeComboBox.getValue());
-        MyFile decryptFile = new MyFile(aes.decrypt(file.getContent()));
+        MyFile decryptFile = new MyFile(aes.decrypt(ciphertext));
         saveDecryptFile(decryptFile);
       }
     } catch (Exception e) {
-      System.out.println(e);
+      e.printStackTrace();
       Alert alert = new Alert(AlertType.INFORMATION);
-      alert.setContentText("Não foi possível descriptografar com esse parâmetros");
+      alert.setContentText("Não foi possível descriptografar com esses parâmetros");
       alert.showAndWait();
     }
 

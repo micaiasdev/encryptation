@@ -98,94 +98,103 @@ public class AesEncryptController {
   }
 
   @FXML
-  void wrongValueField(TextField textField, int multiple, String typeField) {
-    int bytesTextFieldLen = textField.getText().getBytes(StandardCharsets.UTF_8).length;
-    Boolean additional;
-    if (multiple == 2)
-      additional = !isHex(textField.getText());
+  void modifyValidateBackgroundField(TextField textField, Boolean validation) {
+    if (!validation)
+      textField.setStyle("-fx-background-color: #ffc1c1ff");
     else
-      additional = false;
-    Boolean verifyKey = !(bytesTextFieldLen == 16 * multiple || bytesTextFieldLen == 24 * multiple
-        || bytesTextFieldLen == 32 * multiple);
-    Boolean verifyIv = !(bytesTextFieldLen == 16 * multiple);
+      textField.setStyle("-fx-background-color:#ffffffff");
+  }
 
-    if (typeField.equals("KEY")) {
-      if (verifyKey || additional) {
-        textField.setStyle("-fx-background-color: #ffc1c1ff");
-      } else
-        textField.setStyle("-fx-background-color: #ffffffff");
+  @FXML
+  Boolean hexFieldValidate(TextField textField, String fieldType) {
+    int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length / 2;
+    if (fieldType.equalsIgnoreCase("KEY")) {
+      return (fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32) && isHex(textField.getText());
     } else {
-      if (verifyIv || additional)
-        textField.setStyle("-fx-background-color: #ffc1c1ff");
-      else
-        textField.setStyle("-fx-background-color: #ffffffff");
+      return fieldBytesLen == 16 && isHex(textField.getText());
     }
   }
 
   @FXML
-  void wrongKeyField(KeyEvent event) {
-    if (keyFormatComboBox.getValue().equalsIgnoreCase("UTF-8"))
-      wrongValueField(keyField, 1, "KEY");
-    else {
-      wrongValueField(keyField, 2, "KEY");
-      System.out.println(isHex(keyField.getText()));
-    }
-  }
-
-  @FXML
-  void wrongIvField(KeyEvent event) {
-    if (ivFormatComboBox.getValue().equalsIgnoreCase(("UTF-8")))
-      wrongValueField(ivField, 1, "IV");
+  Boolean utfFieldValidate(TextField textField, String fieldType) {
+    int fieldBytesLen = textField.getText().getBytes(StandardCharsets.UTF_8).length;
+    if (fieldType.equalsIgnoreCase("KEY"))
+      return fieldBytesLen == 16 || fieldBytesLen == 24 || fieldBytesLen == 32;
     else
-      wrongValueField(ivField, 2, "IV");
+      return fieldBytesLen == 16;
   }
 
   @FXML
-  void wrongKeyFieldAction(ActionEvent event) {
-    if (keyFormatComboBox.getValue().equals("UTF-8"))
-      wrongValueField(keyField, 1, "KEY");
+  void wrongKeyFieldValid(KeyEvent event) {
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(keyField, hexFieldValidate(keyField, "KEY"));
+    // UTF_8
     else
-      wrongValueField(keyField, 2, "KEY");
+      modifyValidateBackgroundField(keyField, utfFieldValidate(keyField, "KEY"));
   }
 
   @FXML
-  void wrongIvFieldAction(ActionEvent event) {
-    if (ivFormatComboBox.getValue().equals("UTF-8"))
-      wrongValueField(ivField, 1, "IV");
+  void wrongKeyFieldValidOnAction(ActionEvent event) {
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(keyField, hexFieldValidate(keyField, "KEY"));
+    // UTF_8
     else
-      wrongValueField(ivField, 2, "IV");
+      modifyValidateBackgroundField(keyField, utfFieldValidate(keyField, "KEY"));
   }
 
   @FXML
-  Boolean validKeyField() {
-    int byteskeyLen = keyField.getText().getBytes(StandardCharsets.UTF_8).length;
-    if (getKeyFormatSelected().equalsIgnoreCase("UTF-8")) {
-      if (!(byteskeyLen == 16 || byteskeyLen == 24 || byteskeyLen == 32))
-        return false;
-      else
+  void wrongIvFieldValid(KeyEvent event) {
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
+    // UTF_8
+    else
+      modifyValidateBackgroundField(ivField, utfFieldValidate(ivField, "IV"));
+  }
+
+  @FXML
+  void wrongIvFieldValidOnAction(ActionEvent event) {
+    // HEXADECIMAL
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX"))
+      modifyValidateBackgroundField(ivField, hexFieldValidate(ivField, "IV"));
+    // UTF_8
+    else
+      modifyValidateBackgroundField(ivField, utfFieldValidate(ivField, "IV"));
+  }
+
+  @FXML
+  boolean keyFieldValid() {
+    if (keyFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      if (hexFieldValidate(keyField, "KEY")) {
         return true;
-    } else {
-      if (!(byteskeyLen == 32 || byteskeyLen == 48 || byteskeyLen == 64) || !isHex(keyField.getText()))
-        return false;
-      else
-        return true;
-    }
-  }
-
-  @FXML
-  Boolean validIvField() {
-    int bytesIvLen = ivField.getText().getBytes(StandardCharsets.UTF_8).length;
-    if (getIvParameterFormatSelected().equalsIgnoreCase("UTF-8")) {
-      if (!(bytesIvLen == 16)) {
-        return false;
       } else {
-        return true;
+        return false;
       }
     } else {
-      if (!(bytesIvLen == 32) || !isHex(ivField.getText())) {
-        return false;
-      } else
+      if (utfFieldValidate(keyField, "KEY")) {
         return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  @FXML
+  Boolean ivParameterFieldValid() {
+    if (ivFormatComboBox.getValue().equalsIgnoreCase("HEX")) {
+      if (hexFieldValidate(ivField, "IV")) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (utfFieldValidate(ivField, "IV")) {
+        return true;
+      } else {
+        return false;
+      }
     }
   }
 
@@ -268,12 +277,12 @@ public class AesEncryptController {
             "Verifique se você selecionou corretamente o formato de entrada.\nFormatos suportados: Hexadecimal e Base64");
         throw new IllegalArgumentException("Invalid File Format");
       }
-      if (!validKeyField()) {
+      if (!keyFieldValid()) {
         alertGenerate("Tamanho de chave inválido",
             "O tamanho da chave é inválido. O AES aceita 128, 192 ou 256 bits (16, 24 ou 32 bytes). Verifique o tamanho informado.");
         throw new IllegalArgumentException("Invalid key");
       }
-      if (!validIvField()) {
+      if (!ivParameterFieldValid()) {
         alertGenerate("IV inválido",
             "O vetor de inicialização (IV) tem tamanho inválido. Para AES utilize 16 bytes (128 bits). Verifique o valor fornecido.");
         throw new IllegalArgumentException("Iv Parameter Invalid");
@@ -322,15 +331,16 @@ public class AesEncryptController {
       validAllInputs();
       MyFile file = new MyFile(filePathSelected);
       if (getKeyFormatSelected().equals("HEX")) {
-        if (getModeEncryptFormatSelected().equals("CBC"))
+        if (getModeEncryptFormatSelected().equals("CBC")) {
           aes = new Aes(HexFormat.of().parseHex(keyField.getText()),
               HexFormat.of().parseHex(ivField.getText()), getModeEncryptFormatSelected());
-        else
+        } else {
           aes = new Aes(HexFormat.of().parseHex(keyField.getText()), getModeEncryptFormatSelected());
+        }
       } else {
         if (getModeEncryptFormatSelected().equals("CBC"))
-          aes = new Aes(HexFormat.of().parseHex(keyField.getText()),
-              keyField.getText().getBytes(StandardCharsets.UTF_8), getModeEncryptFormatSelected());
+          aes = new Aes(keyField.getText().getBytes(StandardCharsets.UTF_8),
+              ivField.getText().getBytes(StandardCharsets.UTF_8), getModeEncryptFormatSelected());
         else
           aes = new Aes(keyField.getText().getBytes(StandardCharsets.UTF_8), getModeEncryptFormatSelected());
       }

@@ -40,8 +40,8 @@
 
             <HBox spacing="5.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 5;" GridPane.columnIndex="0" GridPane.rowIndex="0">
                 <children>
-                    <TextField fx:id="keyField" onKeyTyped="#wrongKeyField" promptText="Key" HBox.hgrow="ALWAYS" />
-                    <ComboBox fx:id="keyFormatComboBox" onAction="#wrongKeyFieldAction" prefWidth="80.0" promptText="HEX">
+                    <TextField fx:id="keyField" onKeyTyped="#wrongKeyFieldValid" promptText="Key" HBox.hgrow="ALWAYS" />
+                    <ComboBox fx:id="keyFormatComboBox" onAction="#wrongKeyFieldValidOnAction" prefWidth="80.0" promptText="HEX">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
                                 <String fx:value="Hex" />
@@ -57,8 +57,8 @@
 
             <HBox spacing="5.0" style="-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 5;" GridPane.columnIndex="1" GridPane.rowIndex="0">
                 <children>
-                    <TextField fx:id="ivField" onKeyTyped="#wrongIvField" promptText="IV" HBox.hgrow="ALWAYS" />
-                    <ComboBox fx:id="ivFormatComboBox" onAction="#wrongIvFieldAction" prefWidth="80.0" promptText="HEX">
+                    <TextField fx:id="ivField" onKeyTyped="#wrongIvFieldValid" promptText="IV" HBox.hgrow="ALWAYS" />
+                    <ComboBox fx:id="ivFormatComboBox" onAction="#wrongIvFieldValidOnAction" prefWidth="80.0" promptText="HEX">
                         <items>
                             <FXCollections fx:factory="observableArrayList">
                                 <String fx:value="Hex" />
