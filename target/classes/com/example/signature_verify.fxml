@@ -18,7 +18,7 @@
         <HBox alignment="CENTER_LEFT" spacing="10.0">
             <Text style="-fx-font-weight: bold; -fx-font-size: 16;" text="Verificação de Assinatura Digital" />
             <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="backButton" mnemonicParsing="false" text="&lt;" />
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#backButton" text="&lt;" />
         </HBox>
         <Separator />
 
