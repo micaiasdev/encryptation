@@ -21,14 +21,14 @@ public class Rsa {
   }
 
   public Rsa() {
-
+    Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
   }
 
-  public byte[] signature(byte[] data, PrivateKey privateKey) throws Exception {
+  public Signature signature(byte[] data, PrivateKey privateKey) throws Exception {
     Signature signature = Signature.getInstance("SHA256withRSA", "BC");
     signature.initSign(privateKey);
     signature.update(data);
-    return signature.sign();
+    return signature;
   }
 
   public boolean signatureVerify(byte[] data, byte[] signature, PublicKey publicKey) throws Exception {
@@ -53,8 +53,8 @@ public class Rsa {
 
     } catch (Exception e) {
       System.out.println(e);
+      return null;
     }
-    return null;
   }
 
   public PrivateKey loadPrivateKey() throws Exception {
@@ -110,7 +110,7 @@ public class Rsa {
 
     } catch (Exception e) {
       System.out.println(e);
+      return null;
     }
-    return null;
   }
 }

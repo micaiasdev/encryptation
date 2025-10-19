@@ -29,7 +29,7 @@ public class Generatekeys {
   }
 
   public void createPEMPrivateKey(Path filePath) throws Exception {
-    String pem_format = "-----BEGIN PRIVATE KEY----- %s\n-----END PRIVATE KEY-----";
+    String pem_format = "-----BEGIN PRIVATE KEY-----\n %s\n-----END PRIVATE KEY-----";
     Path path_file = Paths.get(filePath.toString() + "/privateKey.pem");
     String stringPrivateKey = Base64.getEncoder().encodeToString(getPrivateKey());
     Files.writeString(path_file, String.format(pem_format, stringPrivateKey));
