@@ -6,8 +6,7 @@ Uma aplicação desktop desenvolvida em Java 17 e JavaFX para demonstrar e utili
 
 Este projeto é uma ferramenta gráfica (GUI) que permite ao usuário realizar operações criptográficas comuns de forma visual e intuitiva. Ele foi criado para aplicar conceitos fundamentais de segurança da informação, utilizando a biblioteca Bouncy Castle para as operações criptográficas.
 
-*(Opcional: Adicione um screenshot da tela inicial aqui)*
-`![Screenshot da Aplicação](caminho/para/sua/imagem.png)`
+![Screenshot da Aplicação](imagem.png)
 
 ## ✨ Funcionalidades Principais
 
