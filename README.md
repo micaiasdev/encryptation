@@ -47,8 +47,7 @@ O menu principal permite navegar entre cinco módulos principais:
 
 1.  **Clone o repositório:**
     ```sh
-    git clone [URL-DO-SEU-REPOSITÓRIO]
-    cd [NOME-DO-SEU-REPOSITÓRIO]
+    git clone https://github.com/micaiasdev/encryptation.git
     ```
 
 2.  **Compile e execute com Maven:**
